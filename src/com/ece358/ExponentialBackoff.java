@@ -6,12 +6,12 @@ public class ExponentialBackoff {
     private Random r;
     private int counter = 0;
     private int counterSaturation = 0;
-    private int bitTime = 0;
+    private double bitTime = 0;
 
-    ExponentialBackoff(int linkCapacity){
+    ExponentialBackoff(double linkCapacity){
         this(0, 10, 512, linkCapacity);
     }
-    ExponentialBackoff(int counter, int counterSaturation, int bitTimeSize, int linkCapacity){
+    ExponentialBackoff(int counter, int counterSaturation, int bitTimeSize, double linkCapacity){
         this.r = new Random();
         this.bitTime = bitTimeSize/linkCapacity;
         this.counter = counter;
@@ -21,12 +21,16 @@ public class ExponentialBackoff {
     public double getWaitTime(){
         counter++;
         if (counter > counterSaturation){
-            // TODO: Throw error?
-            System.out.println("Counter greater than saturation");
+            counter = 0;
+            return -1;
         }
         return r.nextInt((int) Math.pow(2,counter))*bitTime;
     }
     public void resetCounter(){
         counter = 0;
+    }
+
+    public int getCounter(){
+        return this.counter;
     }
 }
