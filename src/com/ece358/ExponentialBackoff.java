@@ -4,9 +4,9 @@ import java.util.Random;
 
 public class ExponentialBackoff {
     private Random r;
-    private int counter = 0;
-    private int counterSaturation = 0;
-    private double bitTime = 0;
+    private int counter;
+    private int counterSaturation;
+    private double bitTime;
 
     ExponentialBackoff(double linkCapacity){
         this(0, 10, 512, linkCapacity);
@@ -20,8 +20,8 @@ public class ExponentialBackoff {
 
     public double getWaitTime(){
         counter++;
-        if (counter > counterSaturation){
-            counter = 0;
+        if (counter > counterSaturation ){
+            resetCounter();
             return -1;
         }
         return r.nextInt((int) Math.pow(2,counter))*bitTime;
