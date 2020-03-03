@@ -11,9 +11,11 @@ public class Packet {
     public void incrementArrivalTime(double waitingTime){
         arrivalTime += waitingTime;
     }
+
     public void setArrivalTime(double newTime){
         arrivalTime = newTime;
     }
+
     public double getArrivalTime(){
         return arrivalTime;
     }

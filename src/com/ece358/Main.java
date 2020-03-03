@@ -1,94 +1,68 @@
 package com.ece358;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
-        int successCounter = 0;
-        int totalCounter = 0;
+    public static void main(String[] args) throws IOException {
         double simulationTime = 1000;
-        int nodeCount = 20;
-        double averagePacketArrivalRate = 10;
         double linkCapacity = Math.pow(10,6);
         double packetSize = 1500;
         double nodeDistance = 10;
         double propagationSpeed = Math.pow(10, 8)*2;
 
-        ArrayList<Node> nodes = generateNodes(
-                nodeCount, averagePacketArrivalRate, simulationTime, packetSize, linkCapacity);
+//        SimulationParams params = new SimulationParams(
+//                20, true, simulationTime, 7.0,
+//                linkCapacity, packetSize, nodeDistance, propagationSpeed);
+//        SimulationResult result = new Simulation(params).simulate();
 
-        while (true) {
-            Node earliestNode = nodes.get(0);
-            double maxCollidedPropagationTime = 0;
-
-            for (Node node : nodes) {
-                if (earliestNode == node || node.packets.isEmpty()){
-                    continue;
-                }
-                if (earliestNode.isEmpty()){
-                    earliestNode = node;
-                } else if (!earliestNode.isEmpty() &&
-                                earliestNode.getArrivalTime(0) > node.getArrivalTime(0)){
-                    earliestNode = node;
-                }
-            }
-            if (earliestNode.isEmpty()){
-                break;
-            }
-            totalCounter++;
-            for (Node node: nodes){
-                if (earliestNode == node || node.isEmpty()){
-                    continue;
-                }
-                double propagationTime = nodeDistance*((double) Math.abs(node.nodeNumber-earliestNode.nodeNumber))/propagationSpeed;
-                if (node.getArrivalTime(0) < (earliestNode.getArrivalTime(0) + propagationTime)){
-                    maxCollidedPropagationTime = Math.max(maxCollidedPropagationTime, propagationTime);
-                    node.collision();
-                }
-            }
-            if (maxCollidedPropagationTime == 0){
-                for (Node node : nodes) {
-                    if (earliestNode == node || node.isEmpty()){
-                        continue;
-                    }
-                    double propagationTime = nodeDistance*(Math.abs(node.nodeNumber-earliestNode.nodeNumber))/propagationSpeed;
-                    node.senseMedium(earliestNode.getArrivalTime(0),earliestNode.getTransmissionTime(0),propagationTime);
-                }
-                earliestNode.transmit();
-                successCounter++;
-            } else {
-                earliestNode.senderCollision(maxCollidedPropagationTime);
+        ArrayList<SimulationResult> simulationResultList = new ArrayList<>();
+        ArrayList<SimulationParams> simulationParamsList = new ArrayList<>();
+        for (int n = 20; n <= 100; n+=20 ){
+            for (double averageArrivalRate: new double[]{7.0, 10.0,20.0}){
+                SimulationParams params = new SimulationParams(
+                        n, true, simulationTime, averageArrivalRate,
+                        linkCapacity, packetSize, nodeDistance, propagationSpeed);
+                SimulationResult result = new Simulation(params).simulate();
+                simulationParamsList.add(params);
+                simulationResultList.add(result);
             }
         }
-        System.out.println(successCounter);
-        System.out.println(totalCounter);
+        for (int n = 20; n <= 100; n+=20 ){
+            for (double averageArrivalRate: new double[]{7.0, 10.0,20.0}){
+                SimulationParams params = new SimulationParams(
+                        n, false, simulationTime, averageArrivalRate,
+                        linkCapacity, packetSize, nodeDistance, propagationSpeed);
+                SimulationResult result = new Simulation(params).simulate();
+                simulationParamsList.add(params);
+                simulationResultList.add(result);
+            }
+        }
+        createCSV(simulationResultList, simulationParamsList, "berny.csv");
     }
 
-    public static LinkedList<Packet> generatePackets(
-            double packetSize, double averagePacketArrivalRate, double simulationTime
-    ){
-        PoissonDistribution packetArrivals = new PoissonDistribution(averagePacketArrivalRate);
-        double currentTime = 0;
+    private static void createCSV(
+            List<SimulationResult> simulationResultList,
+            List<SimulationParams> simulationParamsList,
+            String csvName
+    ) throws IOException {
 
-        LinkedList<Packet> packets = new LinkedList<>();
-        while (currentTime < simulationTime) {
-            currentTime += packetArrivals.generateTimeInterval();
-            Packet packet = new Packet(packetSize, currentTime);
-            packets.add(packet);
-        }
-        return packets;
-    }
+        PrintWriter printWriter = new PrintWriter(new FileWriter(csvName));
+        printWriter.printf("Persistent,NodeCount,AveragePacketArrivalRate,Efficiency,Throughput\n");
 
-    public static ArrayList<Node> generateNodes(
-            int nodeLength, double averagePacketArrivalRate, double simulationTime, double packetSize, double linkCapacity
-    ){
-        ArrayList<Node> nodes = new ArrayList<>();
-        for (int i = 0; i < nodeLength; i++){
-            LinkedList<Packet> packets = generatePackets(packetSize, averagePacketArrivalRate, simulationTime);
-            nodes.add(new Node(packets, linkCapacity,i,true));
+        for (int i = 0; i < simulationResultList.size(); i++){
+            SimulationResult simulationResult = simulationResultList.get(i);
+            SimulationParams simulationParams = simulationParamsList.get(i);
+
+            printWriter.printf("%s,%d,%f,%f,%f\n",
+                    simulationParams.persistent, simulationParams.nodeCount, simulationParams.averagePacketArrivalRate,
+                    simulationResult.efficiency, simulationResult.throughput);
         }
-        return  nodes;
+        printWriter.close();
     }
 }

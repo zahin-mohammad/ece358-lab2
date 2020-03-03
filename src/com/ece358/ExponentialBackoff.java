@@ -24,13 +24,10 @@ public class ExponentialBackoff {
             resetCounter();
             return -1;
         }
+        // End is not inclusive
         return r.nextInt((int) Math.pow(2,counter))*bitTime;
     }
     public void resetCounter(){
         counter = 0;
-    }
-
-    public int getCounter(){
-        return this.counter;
     }
 }

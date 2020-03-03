@@ -46,6 +46,8 @@ public class Node {
             if (packets.get(i).getArrivalTime() < packets.get(i-1).getArrivalTime()){
                 packets.get(i).setArrivalTime(
                         getArrivalTime(i-1) + getTransmissionTime(i-1));
+            } else {
+                break;
             }
         }
     }
@@ -71,6 +73,7 @@ public class Node {
     public double getTransmissionTime(int index){
         return packets.get(index).packetLength/linkCapacity;
     }
+
     public double getArrivalTime(int index){
         return packets.get(index).getArrivalTime();
     }
