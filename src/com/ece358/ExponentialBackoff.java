@@ -8,26 +8,25 @@ public class ExponentialBackoff {
     private int counterSaturation;
     private double bitTime;
 
-    ExponentialBackoff(double linkCapacity){
-        this(0, 10, 512, linkCapacity);
+    ExponentialBackoff(double linkCapacity) {
+        this(0, 10, 512.0, linkCapacity);
     }
-    ExponentialBackoff(int counter, int counterSaturation, int bitTimeSize, double linkCapacity){
+
+    ExponentialBackoff(int counter, int counterSaturation, double bitTimeSize, double linkCapacity) {
         this.r = new Random();
         this.bitTime = bitTimeSize/linkCapacity;
         this.counter = counter;
         this.counterSaturation = counterSaturation;
     }
 
-    public double getWaitTime(){
+    public double getWaitTime() {
         counter++;
-        if (counter > counterSaturation ){
+        if (counter > counterSaturation) {
             resetCounter();
             return -1;
         }
         // End is not inclusive
-        return r.nextInt((int) Math.pow(2,counter))*bitTime;
+        return r.nextInt( (int) Math.pow(2, counter) ) * bitTime;
     }
-    public void resetCounter(){
-        counter = 0;
-    }
+    public void resetCounter() { counter = 0; }
 }

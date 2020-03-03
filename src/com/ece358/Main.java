@@ -3,7 +3,6 @@ package com.ece358;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,28 +15,37 @@ public class Main {
         double nodeDistance = 10;
         double propagationSpeed = Math.pow(10, 8)*2;
 
-//        SimulationParams params = new SimulationParams(
-//                20, true, simulationTime, 7.0,
-//                linkCapacity, packetSize, nodeDistance, propagationSpeed);
-//        SimulationResult result = new Simulation(params).simulate();
-
         ArrayList<SimulationResult> simulationResultList = new ArrayList<>();
         ArrayList<SimulationParams> simulationParamsList = new ArrayList<>();
-        for (int n = 20; n <= 100; n+=20 ){
-            for (double averageArrivalRate: new double[]{7.0, 10.0,20.0}){
+        for (int n = 20; n <= 100; n+=20 ) {
+            for (double averageArrivalRate: new double[]{ 7.0, 10.0,20.0 }) {
                 SimulationParams params = new SimulationParams(
-                        n, true, simulationTime, averageArrivalRate,
-                        linkCapacity, packetSize, nodeDistance, propagationSpeed);
+                        n,
+                        true,
+                        simulationTime,
+                        averageArrivalRate,
+                        linkCapacity,
+                        packetSize,
+                        nodeDistance,
+                        propagationSpeed
+                );
                 SimulationResult result = new Simulation(params).simulate();
                 simulationParamsList.add(params);
                 simulationResultList.add(result);
             }
         }
-        for (int n = 20; n <= 100; n+=20 ){
-            for (double averageArrivalRate: new double[]{7.0, 10.0,20.0}){
+        for (int n = 20; n <= 100; n+=20 ) {
+            for (double averageArrivalRate: new double[]{ 7.0, 10.0,20.0 }) {
                 SimulationParams params = new SimulationParams(
-                        n, false, simulationTime, averageArrivalRate,
-                        linkCapacity, packetSize, nodeDistance, propagationSpeed);
+                        n,
+                        false,
+                        simulationTime,
+                        averageArrivalRate,
+                        linkCapacity,
+                        packetSize,
+                        nodeDistance,
+                        propagationSpeed
+                );
                 SimulationResult result = new Simulation(params).simulate();
                 simulationParamsList.add(params);
                 simulationResultList.add(result);
@@ -55,13 +63,18 @@ public class Main {
         PrintWriter printWriter = new PrintWriter(new FileWriter(csvName));
         printWriter.printf("Persistent,NodeCount,AveragePacketArrivalRate,Efficiency,Throughput\n");
 
-        for (int i = 0; i < simulationResultList.size(); i++){
+        for (int i = 0; i < simulationResultList.size(); i++) {
             SimulationResult simulationResult = simulationResultList.get(i);
             SimulationParams simulationParams = simulationParamsList.get(i);
 
-            printWriter.printf("%s,%d,%f,%f,%f\n",
-                    simulationParams.persistent, simulationParams.nodeCount, simulationParams.averagePacketArrivalRate,
-                    simulationResult.efficiency, simulationResult.throughput);
+            printWriter.printf(
+                    "%s,%d,%f,%f,%f\n",
+                    simulationParams.persistent,
+                    simulationParams.nodeCount,
+                    simulationParams.averagePacketArrivalRate,
+                    simulationResult.efficiency,
+                    simulationResult.throughput
+            );
         }
         printWriter.close();
     }

@@ -1,6 +1,7 @@
 package com.ece358;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 
 public class Simulation {
@@ -17,44 +18,41 @@ public class Simulation {
         ArrayList<Node> nodes = generateNodes();
 
         while (true) {
-            Node earliestNode = nodes.get(0);
+            Node earliestNode;
             double maxCollidedPropagationTime = 0;
+            earliestNode = nodes.stream()
+                    .filter(node -> !node.packets.isEmpty())
+                    .min(Comparator.comparingDouble((Node n) -> n.getArrivalTime(0)))
+                    .orElse(null);
 
-            for (Node node : nodes) {
-                if (earliestNode == node || node.packets.isEmpty()){
-                    continue;
-                }
-                if (earliestNode.isEmpty()){
-                    earliestNode = node;
-                } else if (!earliestNode.isEmpty() &&
-                        earliestNode.getArrivalTime(0) > node.getArrivalTime(0)){
-                    earliestNode = node;
-                }
-            }
-            if (earliestNode.isEmpty()){
+            if (earliestNode == null) {
                 break;
             }
-            totalCounter++;
-            for (Node node: nodes){
-                if (earliestNode == node || node.isEmpty()){ continue; }
 
-                double propagationTime = propagationSpeed(node, earliestNode);
-                if (node.getArrivalTime(0) < (earliestNode.getArrivalTime(0) + propagationTime)){
+            // Sense the medium
+            for (Node node : nodes) {
+                node.senseMedium(
+                        earliestNode.getArrivalTime(0),
+                        earliestNode.getTransmissionTime(0),
+                        propagationTime(node, earliestNode)
+                );
+            }
+
+            totalCounter++;
+
+            // Collisions with sender
+            for (Node node: nodes) {
+                if (earliestNode == node || node.isEmpty()) { continue; }
+
+                double propagationTime = propagationTime(node, earliestNode);
+                if (node.getArrivalTime(0) < (earliestNode.getArrivalTime(0) + propagationTime)) {
                     maxCollidedPropagationTime = Math.max(maxCollidedPropagationTime, propagationTime);
                     node.collision();
                 }
             }
-            if (maxCollidedPropagationTime == 0){
-                for (Node node : nodes) {
-                    if (earliestNode == node || node.isEmpty()){ continue; }
 
-                    double propagationTime = propagationSpeed(node, earliestNode);
-                    node.senseMedium(
-                            earliestNode.getArrivalTime(0),
-                            earliestNode.getTransmissionTime(0),
-                            propagationTime);
-                }
-                earliestNode.transmit();
+            if (maxCollidedPropagationTime == 0) {
+                earliestNode.transmitOrDropPacket();
                 successCounter++;
             } else {
                 earliestNode.senderCollision(maxCollidedPropagationTime);
@@ -63,7 +61,7 @@ public class Simulation {
         return new SimulationResult(successCounter, totalCounter, params);
     }
 
-    public LinkedList<Packet> generatePackets(){
+    public LinkedList<Packet> generatePackets() {
         PoissonDistribution packetArrivals = new PoissonDistribution(params.averagePacketArrivalRate);
         double currentTime = 0;
         LinkedList<Packet> packets = new LinkedList<>();
@@ -76,18 +74,18 @@ public class Simulation {
         return packets;
     }
 
-    public ArrayList<Node> generateNodes(){
+    public ArrayList<Node> generateNodes() {
         ArrayList<Node> nodes = new ArrayList<>();
 
-        for (int i = 0; i < params.nodeCount; i++){
+        for (int i = 0; i < params.nodeCount; i++) {
             LinkedList<Packet> packets = generatePackets();
-            nodes.add(new Node(packets, params.linkCapacity,i,params.persistent));
+            nodes.add(new Node(packets, params.linkCapacity, i, params.persistent));
         }
-        return  nodes;
+        return nodes;
     }
 
-    public double propagationSpeed(Node node1, Node node2){
-        return params.nodeDistance*(Math.abs(node1.nodeNumber-node2.nodeNumber))/params.propagationSpeed;
+    public double propagationTime(Node node1, Node node2) {
+        return params.nodeDistance * (double) (Math.abs(node1.nodeNumber - node2.nodeNumber)) / params.propagationSpeed;
     }
 
 }
