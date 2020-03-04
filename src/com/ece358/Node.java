@@ -57,15 +57,17 @@ public class Node {
                 earliestPacketTime < senderSentTime + senderPropagationTime + senderTransmissionTime
         ) {
             setArrivalTime(0, senderSentTime + senderPropagationTime + senderTransmissionTime);
-        }
 
-        if (!isPersistent) {
-            double waitTime = sensingBackoff.getWaitTime();
-            if (waitTime > 0) {
-                incrementArrivalTime(0, waitTime);
-                updatePacketTimes();
+            if (!isPersistent) {
+                double waitTime = sensingBackoff.getWaitTime();
+                if (waitTime > 0) {
+                    incrementArrivalTime(0, waitTime);
+                    updatePacketTimes();
+                }
             }
         }
+
+
     }
 
     public void transmitOrDropPacket() {

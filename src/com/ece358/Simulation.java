@@ -16,7 +16,7 @@ public class Simulation {
         int totalCounter = 0;
 
         ArrayList<Node> nodes = generateNodes();
-
+        System.out.println(params);
         while (true) {
             Node earliestNode;
             double maxCollidedPropagationTime = 0;
@@ -58,7 +58,9 @@ public class Simulation {
                 earliestNode.senderCollision(maxCollidedPropagationTime);
             }
         }
-        return new SimulationResult(successCounter, totalCounter, params);
+        SimulationResult result = new SimulationResult(successCounter, totalCounter, params);
+        System.out.println(result);
+        return result;
     }
 
     public LinkedList<Packet> generatePackets() {
@@ -111,6 +113,20 @@ class SimulationParams{
         this.nodeDistance = nodeDistance;
         this.propagationSpeed = propagationSpeed;
     }
+    @Override
+    public String toString(){
+        return String.format(
+                "%d,%s,%f,%f,%f,%f,%f,%f",
+                nodeCount,
+                persistent,
+                simulationTime,
+                averagePacketArrivalRate,
+                linkCapacity,
+                packetSize,
+                nodeDistance,
+                propagationSpeed
+        );
+    }
 }
 
 class SimulationResult{
@@ -119,6 +135,15 @@ class SimulationResult{
     SimulationResult(double successCounter, double totalCounter, SimulationParams params){
         this.efficiency = successCounter/totalCounter;
         this.throughput = successCounter*params.packetSize/params.simulationTime;
+    }
+
+    @Override
+    public String toString(){
+        return String.format(
+                "%f,%f",
+                efficiency,
+                throughput
+        );
     }
 }
 
