@@ -18,9 +18,8 @@ public class Simulation {
         ArrayList<Node> nodes = generateNodes();
         System.out.println(params);
         while (true) {
-            Node earliestNode;
             double maxCollidedPropagationTime = 0;
-            earliestNode = nodes.stream()
+            Node earliestNode = nodes.stream()
                     .filter(node -> !node.packets.isEmpty())
                     .min(Comparator.comparingDouble((Node n) -> n.getArrivalTime(0)))
                     .orElse(null);
@@ -29,19 +28,14 @@ public class Simulation {
             totalCounter++;
             // Sense the medium
             for (Node node : nodes) {
+                if (earliestNode == node || node.isEmpty()) { continue; }
+                double propagationTime = propagationTime(node, earliestNode);
                 node.senseMedium(
                         earliestNode.getArrivalTime(0),
                         earliestNode.getTransmissionTime(0),
-                        propagationTime(node, earliestNode)
+                        propagationTime
                 );
-            }
-
-
-            // Collisions with sender
-            for (Node node: nodes) {
-                if (earliestNode == node || node.isEmpty()) { continue; }
-
-                double propagationTime = propagationTime(node, earliestNode);
+                if (node.isEmpty()) { continue; }
                 if (node.getArrivalTime(0) < (earliestNode.getArrivalTime(0) + propagationTime)) {
                     maxCollidedPropagationTime = Math.max(maxCollidedPropagationTime, propagationTime);
                     node.collision();
