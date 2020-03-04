@@ -25,10 +25,8 @@ public class Simulation {
                     .min(Comparator.comparingDouble((Node n) -> n.getArrivalTime(0)))
                     .orElse(null);
 
-            if (earliestNode == null) {
-                break;
-            }
-
+            if (earliestNode == null) { break; }
+            totalCounter++;
             // Sense the medium
             for (Node node : nodes) {
                 node.senseMedium(
@@ -38,7 +36,6 @@ public class Simulation {
                 );
             }
 
-            totalCounter++;
 
             // Collisions with sender
             for (Node node: nodes) {
@@ -65,13 +62,13 @@ public class Simulation {
 
     public LinkedList<Packet> generatePackets() {
         PoissonDistribution packetArrivals = new PoissonDistribution(params.averagePacketArrivalRate);
-        double currentTime = 0;
+        double currentTime = packetArrivals.generateTimeInterval();
         LinkedList<Packet> packets = new LinkedList<>();
 
         while (currentTime < params.simulationTime) {
-            currentTime += packetArrivals.generateTimeInterval();
             Packet packet = new Packet(params.packetSize, currentTime);
             packets.add(packet);
+            currentTime += packetArrivals.generateTimeInterval();
         }
         return packets;
     }
