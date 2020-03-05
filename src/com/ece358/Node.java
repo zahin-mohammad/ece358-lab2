@@ -19,13 +19,14 @@ public class Node {
         this.packets = packets;
     }
 
-    public void collision() {
+    public void collision(double senderSentTime, double senderPropagationTime) {
         double waitTime = collisionBackoff.getWaitTime();
         if (waitTime < 0) {
             transmitOrDropPacket();
             return;
         }
-        incrementArrivalTime(0, waitTime);
+        waitTime += senderSentTime + senderPropagationTime;
+        setArrivalTime(0, waitTime);
         updatePacketTimes();
     }
 
@@ -35,50 +36,49 @@ public class Node {
             transmitOrDropPacket();
             return;
         }
-        waitTime += maxPropagationDelay + getTransmissionTime(0);
+        waitTime += maxPropagationDelay + getTransmissionDelay(0);
         incrementArrivalTime(0, waitTime);
         updatePacketTimes();
     }
 
     private void updatePacketTimes() {
         for (int i = 1; i < packets.size(); i++) {
-            if (getArrivalTime(i) < getArrivalTime(i-1)) {
-                setArrivalTime(i, getArrivalTime(i-1) + getTransmissionTime(i-1));
+            if (getArrivalTime(i) <= getArrivalTime(i-1)) {
+                setArrivalTime(i, getArrivalTime(i-1) + getTransmissionDelay(i-1));
             } else { break; }
         }
     }
 
     public void senseMedium(double senderSentTime, double senderTransmissionTime, double senderPropagationTime) {
         if (packets.isEmpty()) { return; }
-
         double earliestPacketTime = getArrivalTime(0);
         if (
                 earliestPacketTime > senderSentTime + senderPropagationTime &&
                 earliestPacketTime < senderSentTime + senderPropagationTime + senderTransmissionTime
         ) {
-            setArrivalTime(0, senderSentTime + senderPropagationTime + senderTransmissionTime);
-
-            if (!isPersistent) {
+            if (isPersistent){
+                setArrivalTime(0, senderSentTime + senderPropagationTime + senderTransmissionTime);
+            } else {
                 double waitTime = sensingBackoff.getWaitTime();
                 if (waitTime > 0) {
                     incrementArrivalTime(0, waitTime);
-                    updatePacketTimes();
+                } else {
+                    transmitOrDropPacket();
                 }
             }
+            updatePacketTimes();
         }
-
-
     }
 
     public void transmitOrDropPacket() {
         collisionBackoff.resetCounter();
         sensingBackoff.resetCounter();
-        packets.remove(0);
+        packets.pop();
     }
 
     private void setArrivalTime(int index, double waitTime) { packets.get(index).setArrivalTime(waitTime); }
 
-    public double getTransmissionTime(int index) { return packets.get(index).packetLength/linkCapacity; }
+    public double getTransmissionDelay(int index) { return packets.get(index).packetLength/linkCapacity; }
 
     public double getArrivalTime(int index) { return packets.get(index).getArrivalTime(); }
 

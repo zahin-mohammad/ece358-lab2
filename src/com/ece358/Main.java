@@ -18,7 +18,7 @@ public class Main {
         ArrayList<SimulationResult> simulationResultList = new ArrayList<>();
         ArrayList<SimulationParams> simulationParamsList = new ArrayList<>();
         for (int n = 20; n <= 100; n+=20 ) {
-            for (double averageArrivalRate: new double[]{ 7.0, 10.0,20.0 }) {
+            for (double averageArrivalRate: new double[]{ 7.0, 10.0}) {
                 SimulationParams params = new SimulationParams(
                         n,
                         true,
@@ -35,7 +35,7 @@ public class Main {
             }
         }
         for (int n = 20; n <= 100; n+=20 ) {
-            for (double averageArrivalRate: new double[]{ 7.0, 10.0,20.0 }) {
+            for (double averageArrivalRate: new double[]{ 7.0, 10.0, 20.0}) {
                 SimulationParams params = new SimulationParams(
                         n,
                         false,
