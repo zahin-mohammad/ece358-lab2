@@ -16,7 +16,7 @@ public class Simulation {
         int transmissionAttempts = 0;
 
         ArrayList<Node> nodes = generateNodes();
-        System.out.println(params);
+//        System.out.println(params);
 
         while (true) {
             double maxCollidedPropagationTime = -1;
@@ -65,7 +65,9 @@ public class Simulation {
         }
 
         SimulationResult result = new SimulationResult(successfulTransmissions, transmissionAttempts, params);
-        System.out.println(result);
+//        System.out.println(result);
+        System.out.println(String.format("Persistence: %s Eff: %f Throughput: %f nodes: %d arrivalRate %f", params.persistent, result.efficiency, result.throughput, params.nodeCount, params.averagePacketArrivalRate));
+//        System.out.println(String.format("Success: %d Total: %d", successfulTransmissions, transmissionAttempts));
         return result;
     }
 
@@ -138,7 +140,7 @@ class SimulationResult{
     double throughput;
     SimulationResult(double successCounter, double totalCounter, SimulationParams params){
         this.efficiency = successCounter / totalCounter;
-        this.throughput = successCounter * params.packetSize / params.simulationTime;
+        this.throughput = successCounter * params.packetSize / (params.simulationTime * Math.pow(10,6));
     }
 
     @Override

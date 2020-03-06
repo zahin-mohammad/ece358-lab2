@@ -17,38 +17,24 @@ public class Main {
 
         ArrayList<SimulationResult> simulationResultList = new ArrayList<>();
         ArrayList<SimulationParams> simulationParamsList = new ArrayList<>();
-        for (int n = 20; n <= 100; n+=20 ) {
-            for (double averageArrivalRate: new double[]{ 7.0, 10.0, 20.0}) {
-                SimulationParams params = new SimulationParams(
-                        n,
-                        true,
-                        simulationTime,
-                        averageArrivalRate,
-                        linkCapacity,
-                        packetSize,
-                        nodeDistance,
-                        propagationSpeed
-                );
-                SimulationResult result = new Simulation(params).simulate();
-                simulationParamsList.add(params);
-                simulationResultList.add(result);
-            }
-        }
-        for (int n = 20; n <= 100; n+=20 ) {
-            for (double averageArrivalRate: new double[]{ 7.0, 10.0, 20.0}) {
-                SimulationParams params = new SimulationParams(
-                        n,
-                        false,
-                        simulationTime,
-                        averageArrivalRate,
-                        linkCapacity,
-                        packetSize,
-                        nodeDistance,
-                        propagationSpeed
-                );
-                SimulationResult result = new Simulation(params).simulate();
-                simulationParamsList.add(params);
-                simulationResultList.add(result);
+
+        for (boolean persistent: new boolean[]{true, false}) {
+            for (int n = 20; n <= 100; n+=20 ) {
+                for (double averageArrivalRate: new double[]{7.0, 10.0, 20.0}) {
+                    SimulationParams params = new SimulationParams(
+                            n,
+                            persistent,
+                            simulationTime,
+                            averageArrivalRate,
+                            linkCapacity,
+                            packetSize,
+                            nodeDistance,
+                            propagationSpeed
+                    );
+                    SimulationResult result = new Simulation(params).simulate();
+                    simulationParamsList.add(params);
+                    simulationResultList.add(result);
+                }
             }
         }
         createCSV(simulationResultList, simulationParamsList, "berny.csv");

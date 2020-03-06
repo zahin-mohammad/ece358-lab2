@@ -48,6 +48,11 @@ public class Node {
     }
 
     private void updatePacketTimes() {
+//        for ( int i = 1; i < packets.size(); i++) {
+//            if (getArrivalTime(i) <= getArrivalTime(i-1)) {
+//                setArrivalTime(i, getArrivalTime(i-1) + getTransmissionDelay(i-1));
+//            } else { break;}
+//        }
         if (packets.size() > 1) {
             if (getArrivalTime(1) <= getArrivalTime(0)) {
                 setArrivalTime(1, getArrivalTime(0) + getTransmissionDelay(0));
@@ -79,15 +84,15 @@ public class Node {
                     }
                 }
             }
+            updatePacketTimes();
         } else {
             sensingBackoff.resetCounter();
-            return;
         }
-        updatePacketTimes();
     }
 
     // If no collisions, reset the collision counter and remove the frame from queue
     public void transmitPacket() {
+        updatePacketTimes();
         dropPacket();
     }
 
