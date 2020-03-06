@@ -12,9 +12,9 @@ public class ExponentialBackoff {
         this(0, 10, 512.0, linkCapacity);
     }
 
-    ExponentialBackoff(int counter, int counterSaturation, double bitTimeSize, double linkCapacity) {
+    private ExponentialBackoff(int counter, int counterSaturation, double bitTimeSize, double linkCapacity) {
         this.r = new Random();
-        this.bitTime = bitTimeSize/linkCapacity;
+        this.bitTime = bitTimeSize / linkCapacity;
         this.counter = counter;
         this.counterSaturation = counterSaturation;
     }
@@ -26,7 +26,8 @@ public class ExponentialBackoff {
             return -1;
         }
         // End is not inclusive
-        return r.nextInt( (int) Math.pow(2, counter) ) * bitTime;
+        return (double) r.nextInt( (int) Math.pow(2, counter)) * bitTime;
     }
+
     public void resetCounter() { counter = 0; }
 }

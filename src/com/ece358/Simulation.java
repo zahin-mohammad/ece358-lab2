@@ -12,48 +12,59 @@ public class Simulation {
     }
 
     public  SimulationResult simulate() {
-        int successCounter = 0;
-        int totalCounter = 0;
+        int successfulTransmissions = 0;
+        int transmissionAttempts = 0;
 
         ArrayList<Node> nodes = generateNodes();
         System.out.println(params);
 
         while (true) {
-            double maxCollidedPropagationTime = 0;
+            double maxCollidedPropagationTime = -1;
+
+            // Select which node should transmit next
             Node earliestNode = nodes.stream()
                     .filter(node -> !node.packets.isEmpty())
                     .min(Comparator.comparingDouble((Node n) -> n.getArrivalTime(0)))
                     .orElse(null);
 
-            if (earliestNode == null) { break; }
-            totalCounter++;
+            // If no nodes are able to transmit, the simulation is finished
+            if (earliestNode == null || earliestNode.getArrivalTime(0) > params.simulationTime) { break; }
+            transmissionAttempts++;
+
+            // Detect and handle collisions
+            // Go through all the nodes
             for (Node node : nodes) {
-                if (earliestNode == node || node.isEmpty()) { continue; }
+                // (skipping the sending node)
+                if (earliestNode.nodeNumber == node.nodeNumber || node.isEmpty()) { continue; }
+                // For each one, determine the propagation delay from the sending node to this node
                 double propagationTime = propagationTime(node, earliestNode);
 
+                // If this node’s scheduled sending time is less than the sending node’s transmission time plus
+                // the propagation delay, we have a collision (because this node did not know it would collide)
                 if (node.getArrivalTime(0) <= (earliestNode.getArrivalTime(0) + propagationTime)) {
+                    transmissionAttempts++;
                     maxCollidedPropagationTime = Math.max(maxCollidedPropagationTime, propagationTime);
-                    node.collision(
-                            earliestNode.getArrivalTime(0),
-                            propagationTime);
+                    node.collision(earliestNode.getArrivalTime(0), propagationTime);
                 } else {
                     node.senseMedium(
                             earliestNode.getArrivalTime(0),
-                            earliestNode.getTransmissionDelay(0),
-                            propagationTime
+                            propagationTime,
+                            earliestNode.getTransmissionDelay(0)
                     );
                 }
             }
 
-            if (maxCollidedPropagationTime == 0) {
-                earliestNode.transmitOrDropPacket();
-                successCounter++;
+            if (maxCollidedPropagationTime == -1) {
+                // If no collisions, reset the collision counter and remove the frame from queue
+                earliestNode.transmitPacket();
+                successfulTransmissions++;
             } else {
+                // On the sending node, if there were collisions with any of the nodes
                 earliestNode.senderCollision(maxCollidedPropagationTime);
             }
         }
 
-        SimulationResult result = new SimulationResult(successCounter, totalCounter, params);
+        SimulationResult result = new SimulationResult(successfulTransmissions, transmissionAttempts, params);
         System.out.println(result);
         return result;
     }
@@ -73,16 +84,14 @@ public class Simulation {
 
     public ArrayList<Node> generateNodes() {
         ArrayList<Node> nodes = new ArrayList<>();
-
         for (int i = 0; i < params.nodeCount; i++) {
-            LinkedList<Packet> packets = generatePackets();
-            nodes.add(new Node(packets, params.linkCapacity, i, params.persistent));
+            nodes.add(new Node(generatePackets(), params.linkCapacity, i, params.persistent));
         }
         return nodes;
     }
 
     public double propagationTime(Node node1, Node node2) {
-        return params.nodeDistance * (double) (Math.abs(node1.nodeNumber - node2.nodeNumber)) / params.propagationSpeed;
+        return (params.nodeDistance * (double) (Math.abs(node1.nodeNumber - node2.nodeNumber))) / params.propagationSpeed;
     }
 
 }
@@ -128,8 +137,8 @@ class SimulationResult{
     double efficiency;
     double throughput;
     SimulationResult(double successCounter, double totalCounter, SimulationParams params){
-        this.efficiency = successCounter/totalCounter;
-        this.throughput = successCounter*params.packetSize/params.simulationTime;
+        this.efficiency = successCounter / totalCounter;
+        this.throughput = successCounter * params.packetSize / params.simulationTime;
     }
 
     @Override
