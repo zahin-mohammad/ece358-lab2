@@ -1,5 +1,3 @@
-package com.ece358;
-
 public class Packet {
     double packetLength;
     private double arrivalTime;

@@ -1,5 +1,3 @@
-package com.ece358;
-
 import java.util.LinkedList;
 
 public class Node {
