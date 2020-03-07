@@ -1,6 +1,6 @@
 #!/bin/bash
 
 ./clean.sh
-cd src/com/ece358 || exit
+cd src || exit
 javac *.java
 java Main
