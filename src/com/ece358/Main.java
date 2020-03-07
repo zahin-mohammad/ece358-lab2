@@ -37,7 +37,7 @@ public class Main {
                 }
             }
         }
-        createCSV(simulationResultList, simulationParamsList, "berny.csv");
+        createCSV(simulationResultList, simulationParamsList, "stats.csv");
     }
 
     private static void createCSV(
