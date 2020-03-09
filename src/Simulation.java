@@ -63,9 +63,7 @@ public class Simulation {
         }
 
         SimulationResult result = new SimulationResult(successfulTransmissions, transmissionAttempts, params);
-//        System.out.println(result);
         System.out.println(String.format("Persistence: %s Eff: %f Throughput: %f nodes: %d arrivalRate %f", params.persistent, result.efficiency, result.throughput, params.nodeCount, params.averagePacketArrivalRate));
-//        System.out.println(String.format("Success: %d Total: %d", successfulTransmissions, transmissionAttempts));
         return result;
     }
 
